@@ -20,7 +20,7 @@ def operation_select (num1, num2)
   else 
      puts "Please enter 1, 2, 3 or 4."    
      operation_select(num1, num2)
-     return
+     return                             # this return is rather important. otherwise, it will puts more than twice.
   end 
   
   puts "Result is: #{result}."
