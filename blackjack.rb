@@ -1,6 +1,6 @@
 # ==Blackjack Game==
 
-# Some rules...  
+# Some rules..if you are blackjack rookie like me.. 
 # "deck" means "pack"
 # a "hand" is the subset of cards held at one time by a player 
 # Ace is worth 1 or 11; Jack, Queen and King worth 10; others are worth the numerical value
@@ -15,7 +15,7 @@
 
 def sums_up(cards)   # calculate the total value of cards in hands
 	sum = 0
-  new_arr = cards.map{|e| e[1]}  # generate a new array contain the values returned by the block
+  new_arr = cards.map{|e| e[0]}  # generate a new array contain the values returned by the block
 
   new_arr.each do |x| 
   	if x == 'Ace'
@@ -36,7 +36,34 @@ def sums_up(cards)   # calculate the total value of cards in hands
 	sum
 end
 
+def shuffle_cards 
+  # Shuffle the cards
+  
+  suits = ["Spades", "Hearts", "Diamonds", "Clubs"] 
+  cards = %w(Ace 2 3 4 5 6 7 8 9 10 Jack Queen King) # a better way to creat an array of strings
 
+  deck = cards.product(suits) # returns an array of all combinations of elements from all arrays
+  deck.shuffle! # shuffles elements in self in place
+
+end
+
+def show_cards(player_cards, dealer_cards, player_total, dealer_total)
+
+  print "You have "
+  player_cards.each do |cards|
+    print "#{cards.join(" of ") + ", "} "
+  end
+  
+  print "and your total value is #{player_total}."
+  puts
+
+  print "Dealer has "
+  dealer_cards.each {|cards| print "#{cards.join(" of ") + ", "}" }
+    
+  print "and dealer's total value is #{dealer_total}."
+  puts
+
+end
 
 # Welcome 
 
@@ -47,13 +74,8 @@ name = gets.chomp.capitalize
 puts
 puts "Hi, #{name}! Let's play!\n"
 
-# Shuffle the cards
-
-suits = ["spades", "hearts", "diamonds", "clubs"] 
-cards = %w(Ace 2 3 4 5 6 7 8 9 10 Jack Queen King) # a better way to creat an array of strings
-
-deck = suits.product(cards) # returns an array of all combinations of elements from all arrays
-deck.shuffle! # shuffles elements in self in place
+# shuffle cards
+deck = shuffle_cards  
 
 # Deal the cards
 puts
@@ -71,31 +93,27 @@ dealer_cards << deck.pop
 player_total = sums_up(player_cards)
 dealer_total = sums_up(dealer_cards)
 
-# Show the cards
-puts "Your cards are #{player_cards[0][1]} of #{player_cards[0][0]} and #{player_cards[1][1]} of #{player_cards[1][0]}." 
-puts "Your total values is #{player_total}."
+# Show cards
+show_cards(player_cards, dealer_cards, player_total, dealer_total)
+
 
 if player_total == 21
   puts "Congratulations! You win!"
   exit
 end
 
-puts "Dealer cards including #{dealer_cards[1][1]} of #{dealer_cards[1][0]}."
-puts
-
-
+  
 
 # Hit or stay
-while player_total < 21
-puts "What action would you like to take? 1. hit; 2. stay."
+
+puts "\nWhat action would you like to take? 1. hit; 2. stay."
 action = gets.chomp
 
 if action == '1'
-  puts "You choose to hit."
+  puts "\nYou choose to hit...\n"
   player_cards << deck.pop
-  puts "Here is your new card: #{player_cards[2][1]} of #{player_cards[2][0].}"
-  puts
   player_total = sums_up(player_cards)
+  show_cards(player_cards, dealer_cards, player_total, dealer_total)
 
   if player_total == 21
     puts "Congratulations! You win!"
@@ -109,6 +127,10 @@ end
 
 
 
+=begin
+  
+rescue Exception => e
+  
 end
 
 # Compare
@@ -125,10 +147,4 @@ else
   puts "You and the dealer has the same total value #{player_total}. Tie."
 end
 
-    
-
-
-
-  
-
-  
+=end
