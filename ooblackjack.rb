@@ -1,5 +1,6 @@
 # ==Blackjack Game==
 
+# Object Oriented Version
 # Some rules..if you are blackjack rookie like me.. 
 # "deck" means "pack"
 # a "hand" is the subset of cards held at one time by a player 
@@ -10,6 +11,39 @@
 # dealer must hit until she has at least 21.
 # if dealer busted, player wins; if sums up equals 21, dealer wins
 # if dealer stays, compare the sums, higher value wins. 
+
+class Card
+  attr_accessor :suit, :value
+  
+  def initialize
+
+  end
+end
+
+class Deck
+  def initialize
+
+  end
+end
+
+class Player
+  def initialize
+
+  end
+end
+
+class Dealer
+  def initialize
+
+  end
+end
+
+class Hand
+  def initialize
+
+  end
+end
+
 
 
 # calculate the total value of cards in hands
