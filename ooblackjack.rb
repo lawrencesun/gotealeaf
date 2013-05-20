@@ -12,112 +12,203 @@
 # if dealer busted, player wins; if sums up equals 21, dealer wins
 # if dealer stays, compare the sums, higher value wins. 
 
-class Card
+class Card 
   attr_accessor :suit, :value
-  
-  def initialize
 
+  def initialize(suit, value)
+    @suit = suit 
+    @value = value
   end
+
+  def to_s
+    "#{value} of #{suit}"
+  end
+
 end
 
 class Deck
+  attr_accessor :cards
+  
   def initialize
+    @cards = []
+    suits = ["Spades", "Hearts", "Diamonds", "Clubs"] 
+    value = %w(Ace 2 3 4 5 6 7 8 9 10 Jack Queen King) # a better way to creat an array of strings
+    suit.each do |suit|
+      value.each do |value|   
+        @cards << Card.new(suit, value)
+      end
+    end
+    @cards.shuffle!
+  end
+  
+  def deal_cards
+    cards.pop
+  end
+      
+end
+
+module Hand
+  # calculate the total value of cards in hands
+  def sums_up(cards)   
+    sum = 0
+    new_arr = cards.map{|e| cards.value}  # generate a new array contain the values returned by the block
+
+    new_arr.each do |x| 
+      if x == 'Ace'
+        sum += 11
+      elsif x.to_i == 0
+        # instead of "x == 'Jack' || x == 'Queen' || x == 'King'""
+        sum += 10
+      else 
+        sum += x.to_i
+      end
+    end
+
+    # correct for Aces
+    new_arr.select{|e| e == "Ace"}.count.times do # count how many "ace"s and do n times
+      sum -= 10 if sum >21
+    end
+
+    sum
+  end
+
+  # show cards
+  def show_cards
+
+    puts "#{name}'s Hand"
+    cards.each do |cards|
+      print "#{cards}, "
+    end
+    
+    puts "total value is #{sum}."
+    puts
 
   end
+
+  def add_cards(new_cards)
+
+    cards << new_cards
+
+  end
+  
 end
 
 class Player
-  def initialize
+  include Hand
 
+  attr_accessor :name, :cards
+
+  def initialize(name)
+    @name = name
+    @cards = []
   end
+
 end
+
 
 class Dealer
-  def initialize
+  include Hand
 
+  attr_accessor :name, :cards
+
+  def initialize
+    @name = "Dealer"
+    @cards = []
   end
+
 end
 
-class Hand
-  def initialize
 
+class Game
+  attr_accessor :deck, :player, :dealer
+
+  def initialize 
+    @deck = Deck.new
+    @player = Player.new("player")
+    @dealer = Dealer.new
   end
-end
 
+  def greeting
+    puts 
+    puts "Hi, Welcome to Blackjack!"
+    puts "What's your name?"
+    player.name = gets.chomp.capitalize
+    puts
+    puts "Hi, #{player.name}! Let's play!\n"
+  end
 
+  def deal
+    player.add_cards(deck.deal_cards)
+    dealer.add_cards(deak.deal_cards)
+    player.add_cards(deck.deal_cards)
+    dealer.add_cards(deak.deal_cards)
+  end
 
-# calculate the total value of cards in hands
-def sums_up(cards)   
-	sum = 0
-  new_arr = cards.map{|e| e[0]}  # generate a new array contain the values returned by the block
+  def show
+    player.show_cards
+    dealer.show_cards
+  end
 
-  new_arr.each do |x| 
-  	if x == 'Ace'
-  		sum += 11
-    elsif x.to_i == 0
-    	# instead of "x == 'Jack' || x == 'Queen' || x == 'King'""
-    	sum += 10
-    else 
-    	sum += x.to_i
+  def hit_or_bust(turn)
+    case turn
+    when "player"
+      if player.sum == 21
+        puts "\nCongratulations! You win!"
+      elsif player.sum > 21
+        puts "\nOh no! Busted! You lose..."
+      end
+    when "dealer"
+      if dealer.sum == 21
+        puts "\nDealer hits blackjack, you lose."
+      elsif dealer.sum > 21
+        puts "\nDealer busted! You win!"
+      end
     end
   end
 
-  # correct for Aces
-  new_arr.select{|e| e == "Ace"}.count.times do # count how many "ace"s and do n times
-    sum -= 10 if sum >21
-  end
+  def player_turn
+    puts 
 
-	sum
-end
+    while player.sum < 21
+    puts "\nWhat action would you like to take? 1. hit; 2. stay."
+    action = gets.chomp
 
+    if !['1', '2'].include?(action)
+      puts "You must enter 1 or 2."
+      next  # to the next loop
+    end  
 
-# Shuffle the cards
-def shuffle_cards 
+    if action == '2'
+      puts "\nYou choose to stand...\n"
+      break  # break the loop
+    end
 
-  
-  suits = ["Spades", "Hearts", "Diamonds", "Clubs"] 
-  cards = %w(Ace 2 3 4 5 6 7 8 9 10 Jack Queen King) # a better way to creat an array of strings
+    if action == '1'
+      puts "\nYou choose to hit...\n"
+      player_cards << deck.pop
+      player_total = sums_up(player_cards)
+      show_cards(player_cards, dealer_cards, player_total, dealer_total)
+      
+      check_cards(player_total, 'player')
 
-  deck = cards.product(suits) # returns an array of all combinations of elements from all arrays
-  deck.shuffle! # shuffles elements in self in place
-
-end
-
-
-# show cards
-def show_cards(player_cards, dealer_cards, player_total, dealer_total)
-
-  print "You have "
-  player_cards.each do |cards|
-    print "#{cards.join(" of ") + ", "} "
-  end
-  
-  print "and your total value is #{player_total}."
-  puts
-
-  print "Dealer has "
-  dealer_cards.each {|cards| print "#{cards.join(" of ") + ", "}" }
-    
-  print "and dealer's total value is #{dealer_total}."
-  puts
-
-end
-
-def check_cards(cards_total, turn)
-
-  if cards_total == 21
-    puts "\nCongratulations! You win!" if turn == 'player'
-    puts "\nDealer hits blackjack, you lose." if turn == 'dealer'
-    exit   # ends the program
-  elsif cards_total > 21
-    puts "\nOh no! Busted! You lose..." if turn == 'player'
-    puts "\nDealer busted! You win!" if turn == 'dealer'
-    exit
-  else 
-    return 
   end
   
 end
+  end
+
+  def dealer_turn
+
+  end
+
+  def compare_cards
+
+  end
+
+end
+
+
+
+
 
 def compare_cards(player_total, dealer_total)
   puts
@@ -138,41 +229,9 @@ def compare_cards(player_total, dealer_total)
 end
 
 
-# Welcome 
-
-puts 
-puts "Hi, Welcome to Blackjack!"
-puts "What's your name?"
-name = gets.chomp.capitalize
-puts
-puts "Hi, #{name}! Let's play!\n"
-
-# shuffle cards
-deck = shuffle_cards  
-
-# Deal the cards
-puts
-puts "Now dealing the cards......"
-puts 
-
-player_cards = []
-dealer_cards = []
-
-player_cards << deck.pop
-dealer_cards << deck.pop
-player_cards << deck.pop
-dealer_cards << deck.pop
-
-player_total = sums_up(player_cards)
-dealer_total = sums_up(dealer_cards)
-
-# Show cards
-show_cards(player_cards, dealer_cards, player_total, dealer_total)
-
-
 # player turn. Hit or stand
 
-check_cards(player_total, 'player')
+
 
 while player_total < 21
   puts "\nWhat action would you like to take? 1. hit; 2. stay."
