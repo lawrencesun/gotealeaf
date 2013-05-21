@@ -1,6 +1,14 @@
 # ==Blackjack Game==
 
 # Object Oriented Version
+# Module: Hand  --> show hand's card, calculate the total value.
+# Class: Card, Deck, Player, Dealer, Game.
+# Card: present format
+# Deck: generate the shuffled deck of cards and deal cards.
+# Player, Dealer: mixin module Hand
+# Game: initialize deck, player, dealer; greeting, deal cards, show cards, hit or busted, player's turn, dealer's turn, compare total value...
+
+
 # Some rules..if you are blackjack rookie like me.. 
 # "deck" means "pack"
 # a "hand" is the subset of cards held at one time by a player 
@@ -31,7 +39,7 @@ class Deck
   
   def initialize
     @cards = []
-    suits = ["Spades", "Hearts", "Diamonds", "Clubs"] 
+    suit = ["Spades", "Hearts", "Diamonds", "Clubs"] 
     value = %w(Ace 2 3 4 5 6 7 8 9 10 Jack Queen King) # a better way to creat an array of strings
     suit.each do |suit|
       value.each do |value|   
@@ -49,9 +57,9 @@ end
 
 module Hand
   # calculate the total value of cards in hands
-  def sums_up(cards)   
+  def sums_up 
     sum = 0
-    new_arr = cards.map{|e| cards.value}  # generate a new array contain the values returned by the block
+    new_arr = cards.map{|card| card.value}  # generate a new array contain the values returned by the block
 
     new_arr.each do |x| 
       if x == 'Ace'
@@ -80,7 +88,7 @@ module Hand
       print "#{cards}, "
     end
     
-    puts "total value is #{sum}."
+    puts "total value is #{sums_up}."
     puts
 
   end
@@ -134,14 +142,15 @@ class Game
     puts "What's your name?"
     player.name = gets.chomp.capitalize
     puts
-    puts "Hi, #{player.name}! Let's play!\n"
+    puts "Hi, #{player.name}! Let's play!"
+    puts
   end
 
   def deal
     player.add_cards(deck.deal_cards)
-    dealer.add_cards(deak.deal_cards)
+    dealer.add_cards(deck.deal_cards)
     player.add_cards(deck.deal_cards)
-    dealer.add_cards(deak.deal_cards)
+    dealer.add_cards(deck.deal_cards)
   end
 
   def show
@@ -152,127 +161,120 @@ class Game
   def hit_or_bust(turn)
     case turn
     when "player"
-      if player.sum == 21
+      if player.sums_up == 21
         puts "\nCongratulations! You win!"
-      elsif player.sum > 21
+        play_again
+      elsif player.sums_up > 21
         puts "\nOh no! Busted! You lose..."
+        play_again
       end
     when "dealer"
-      if dealer.sum == 21
+      if dealer.sums_up == 21
         puts "\nDealer hits blackjack, you lose."
-      elsif dealer.sum > 21
+        play_again
+      elsif dealer.sums_up > 21
         puts "\nDealer busted! You win!"
+        play_again
       end
     end
   end
 
   def player_turn
     puts 
+    puts "Your turn."
 
-    while player.sum < 21
-    puts "\nWhat action would you like to take? 1. hit; 2. stay."
-    action = gets.chomp
+    hit_or_bust("player")
 
-    if !['1', '2'].include?(action)
-      puts "You must enter 1 or 2."
-      next  # to the next loop
-    end  
+    while player.sums_up < 21
+      puts "\nWhat action would you like to take? 1. hit; 2. stay."
+      action = gets.chomp
 
-    if action == '2'
-      puts "\nYou choose to stand...\n"
-      break  # break the loop
+      if !['1', '2'].include?(action)
+        puts "You must enter 1 or 2."
+        next  # to the next loop
+      end  
+
+      if action == '2'
+        puts "\nYou choose to stay..."
+        puts
+        break  # break the loop
+      end
+
+      if action == '1'
+        puts "\nYou choose to hit..."
+        puts
+        player.add_cards(deck.deal_cards)
+        player.show_cards
+        hit_or_bust("player")
+      end
+    
     end
 
-    if action == '1'
-      puts "\nYou choose to hit...\n"
-      player_cards << deck.pop
-      player_total = sums_up(player_cards)
-      show_cards(player_cards, dealer_cards, player_total, dealer_total)
-      
-      check_cards(player_total, 'player')
+  end
 
-  end
-  
-end
-  end
 
   def dealer_turn
+    puts
+    puts "Dealer's turn.\n"
+    
+    hit_or_bust("dealer")
+
+    while dealer.sums_up < 17
+      dealer.add_cards(deck.deal_cards)
+      dealer.show_cards
+      hit_or_bust("dealer")
+    end
 
   end
+
 
   def compare_cards
+    puts 
+    puts "Compare cards...\n"
+    if player.sums_up > dealer.sums_up
+      puts
+      puts "Congratulations! You win!"
+    elsif player.sums_up < dealer.sums_up
+      puts
+      puts "Sorry, you lose."
+    else
+      puts "\nYou and the dealer has the same total value. Tie."
+    end
+    play_again
+  end
 
+  def play_again
+    puts "\nWould you like to play blackjack again? Yes or No?\n"
+    choice = gets.chomp.capitalize
+
+    if choice == "Yes"
+      puts "\n==Starting a new game.==\n"
+      deck = Deck.new
+      player.cards = []
+      dealer.cards = []
+      start_game
+    elsif choice == "No"
+      puts "Goodbye."
+      exit
+    else
+      puts "\nPlease enter 'Yes' or 'No'."
+      play_again
+    end
+  end
+
+  def start_game
+    greeting
+    deal
+    show
+    player_turn
+    dealer_turn
+    compare_cards
   end
 
 end
 
+game = Game.new
+game.start_game
 
 
 
-
-def compare_cards(player_total, dealer_total)
-  puts
-  puts "Compare cards...\n"
-  
-  if player_total > dealer_total
-    puts
-    puts "Congratulations! You win!"
-    exit
-  elsif player_cards < dealer_total
-    puts
-    puts "Sorry, you lose."
-    exit
-  else
-    puts "\nYou and the dealer has the same total value. Tie."
-    exit
-  end
-end
-
-
-# player turn. Hit or stand
-
-
-
-while player_total < 21
-  puts "\nWhat action would you like to take? 1. hit; 2. stay."
-  action = gets.chomp
-
-  if !['1', '2'].include?(action)
-    puts "You must enter 1 or 2."
-    next  # to the next loop
-  end  
-
-  if action == '2'
-    puts "\nYou choose to stand...\n"
-    break  # break the loop
-  end
-
-  if action == '1'
-    puts "\nYou choose to hit...\n"
-    player_cards << deck.pop
-    player_total = sums_up(player_cards)
-    show_cards(player_cards, dealer_cards, player_total, dealer_total)
-    
-    check_cards(player_total, 'player')
-
-  end
-  
-end
-
-# dealer turn
-
-check_cards(dealer_total, 'dealer')
-
-while dealer_total < 17
-  dealer_cards << deck.pop
-  dealer_total = sums_up(dealer_cards)
-  show_cards(player_cards, dealer_cards, player_total, dealer_total)
-
-  check_cards(dealer_total, 'dealer') 
-
-end
-
-
-# Compare
-
-compare_cards(player_total, dealer_total)
